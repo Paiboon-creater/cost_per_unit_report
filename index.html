@@ -413,6 +413,9 @@
 // ==========================================
   // EXPORT TO EXCEL (จัดรูปแบบตามภาพตัวอย่าง)
   // ==========================================
+  // ==========================================
+  // EXPORT TO EXCEL (จัดรูปแบบเป๊ะตามไฟล์ภาพ)
+  // ==========================================
   function exportToExcel() {
     let container = document.getElementById("reportContainer").cloneNode(true);
     
@@ -420,61 +423,58 @@
       alert("ไม่มีตารางข้อมูลสำหรับส่งออก"); return;
     }
 
-    // ลบไอคอน (FontAwesome) ทิ้งก่อนส่งออก จะได้ไม่ติดสัญลักษณ์แปลกๆ ไปใน Excel
+    // ลบไอคอนทิ้งก่อนส่งออก เพื่อไม่ให้มีสัญลักษณ์แปลกๆ ไปโผล่ใน Excel
     let icons = container.querySelectorAll('i');
     icons.forEach(i => i.remove());
 
-    // ดึงโครงสร้างตาราง
     let htmlContent = container.innerHTML;
     
-    // สร้างโครงสร้างไฟล์ Excel พร้อมฝัง CSS ตกแต่งสีและฟอนต์ตามรูป
+    // โครงสร้างไฟล์ Excel พร้อมฝัง CSS ตกแต่งสีฟอนต์และเส้นขอบตามรูป
     let excelHtml = `
       <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
       <head>
         <meta charset="utf-8">
         <style>
-          /* ตั้งค่าฟอนต์หลักเป็น Tahoma เพื่อให้ดูเป็นทางการแบบในรูป */
-          body { font-family: 'Tahoma', sans-serif; }
+          /* ฟอนต์มาตรฐาน Excel */
+          body { font-family: 'Tahoma', 'Arial', sans-serif; }
           
-          /* ตกแต่งตารางและเส้นขอบสีดำ */
+          /* กำหนดเส้นตารางสีดำชัดเจน */
           table { border-collapse: collapse; margin-bottom: 20px; width: 100%; }
-          th, td { border: 1px solid #000000; padding: 5px; font-size: 11pt; text-align: right; }
+          th, td { border: 1px solid #000000; padding: 4px; font-size: 10pt; text-align: right; }
           
-          /* หัวตาราง (วันที่และคำว่า รวมทั้งหมด) -> ตัวหนา, ตรงกลาง, สีเขียว */
-          th { background-color: #ffffff; color: #009900; font-weight: bold; text-align: center; }
+          /* แถวหัวตาราง (วันที่) -> สีเขียว, จัดกึ่งกลาง */
+          th { color: #008000; text-align: center; font-weight: normal; }
           
-          /* คอลัมน์แรกสุด (รายการ / วันที่) -> ชิดซ้าย, ตัวหนา */
-          .sticky-col { text-align: left; background-color: #ffffff; }
+          /* คอลัมน์แรก (รายการ/วันที่) -> จัดชิดซ้าย */
+          .sticky-col { text-align: left; }
           
-          /* ชื่อขั้นตอน (>> ขั้นตอน: ...) -> สีน้ำเงิน, ชิดซ้าย, ไม่เอาขอบ/พื้นหลัง */
+          /* แถวยอดผลิต และ เวลาทำ -> สีดำ */
+          tr.row-qty td, tr.row-qty td.sticky-col { color: #000000; }
+          tr.row-hrs td, tr.row-hrs td.sticky-col { color: #000000; }
+          
+          /* แถวต้นทุน/ชิ้น -> สีแดง */
+          tr.row-cost td, tr.row-cost td.sticky-col { color: #ff0000; }
+          
+          /* หัวข้อขั้นตอน (>> ขั้นตอน: ...) -> สีน้ำเงิน ไม่มีกรอบ */
           h3.matrix-title { 
-            color: #0033cc; 
+            color: #0000ff; 
             font-size: 11pt; 
-            font-weight: bold; 
             text-align: left; 
             margin: 15px 0 5px 0; 
-            background: none; 
+            font-weight: normal; 
             border: none;
+            background: none;
           }
-          h3.matrix-title span { color: #0033cc; }
+          h3.matrix-title span { color: #0000ff; }
           
-          /* แถวต้นทุน/ชิ้น -> เปลี่ยนข้อความทั้งแถวเป็นสีแดง */
-          tr.row-cost td { color: #ff0000; }
-          
-          /* แถวยอดผลิต และ เวลาทำ -> ตัวอักษรสีดำปกติ (ไม่ต้องประกาศเพิ่มเพราะ Default คือดำ) */
-          tr.row-qty td, tr.row-hrs td { color: #000000; }
-          
-          /* หัวกระดาษสุด -> ตัวหนา สีดำ จัดกึ่งกลาง */
+          /* หัวกระดาษสุด (ชื่อรายงาน) -> สีดำ ตัวใหญ่ จัดกึ่งกลาง */
           h2.excel-header { 
             text-align: center; 
             font-size: 16pt; 
-            font-weight: bold; 
+            font-weight: normal; 
             margin-bottom: 20px; 
             color: #000000; 
           }
-          
-          /* บังคับเลข 0 ให้เป็นสีเดียวกับแถวนั้นๆ (ลบสีเทาออก) */
-          .val-zero { color: inherit !important; }
         </style>
       </head>
       <body>
