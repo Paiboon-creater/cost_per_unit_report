@@ -111,6 +111,8 @@
     .sticky-col {
       position: sticky; left: 0; background: #050505; z-index: 2; text-align: left;
       font-weight: bold; color: var(--stock-blue); border-right: 2px solid var(--border-dark);
+      min-width: 130px; 
+      font-size: 12px;
     }
     
     .row-qty td { color: var(--text-main); }
@@ -151,7 +153,7 @@
       .matrix-title { background: #f0f0f0; color: #000; border-bottom: 2px solid #000; padding: 8px; }
       table { border-collapse: collapse; width: 100% !important; }
       th, td { border: 1px solid #ccc; color: #000 !important; padding: 6px; font-size: 12px; }
-      .sticky-col { position: static; background: #f9f9f9; border-right: 1px solid #000; }
+      .sticky-col { position: static; background: #f9f9f9; border-right: 1px solid #000; min-width: auto; }
       .row-cost td { font-weight: bold; }
       
       ::-webkit-scrollbar { display: none; } 
@@ -296,7 +298,7 @@
       const res = await fetch(`${SUPABASE_URL}/daily_production?record_date=gte.${dateFrom}&record_date=lte.${dateTo}`, { headers });
       const logs = await res.json();
 
-      // 2. สร้าง Array วันที่ เพื่อกางเป็นคอลัมน์ (Date Range Array)
+      // 2. สร้าง Array วันที่ เพื่อกางเป็นคอลัมน์
       let dateRange = [];
       let cur = new Date(dateFrom);
       let end = new Date(dateTo);
@@ -305,8 +307,9 @@
         cur.setDate(cur.getDate() + 1);
       }
 
-      // 3. เตรียม Data Structure สำหรับจัดกลุ่ม: agg[id_step][date] = { qty, hrs }
-      let agg = {};
+      // 3. เตรียม Data Structure สำหรับจัดกลุ่มแยกขั้นตอน
+      let agg = {}; 
+      
       db.steps.forEach(s => {
         agg[s.id_step] = { totalQty: 0, totalHrs: 0, daily: {} };
         dateRange.forEach(d => { agg[s.id_step].daily[d] = { qty: 0, hrs: 0 }; });
@@ -316,54 +319,54 @@
       logs.forEach(log => {
         const target = db.targets.find(t => String(t.id_target) === String(log.id_target));
         if (target && target.id_step && agg[target.id_step] && agg[target.id_step].daily[log.record_date]) {
-          agg[target.id_step].daily[log.record_date].qty += (log.produced_amount || 0);
-          agg[target.id_step].daily[log.record_date].hrs += (log.hour_work || 0);
-          agg[target.id_step].totalQty += (log.produced_amount || 0);
-          agg[target.id_step].totalHrs += (log.hour_work || 0);
+          const qty = log.produced_amount || 0;
+          const hrs = log.hour_work || 0;
+
+          // หยอดของแต่ละขั้นตอน
+          agg[target.id_step].daily[log.record_date].qty += qty;
+          agg[target.id_step].daily[log.record_date].hrs += hrs;
+          agg[target.id_step].totalQty += qty;
+          agg[target.id_step].totalHrs += hrs;
         }
       });
 
-      // 5. วาดตาราง HTML (จะแสดงเฉพาะขั้นตอนที่มีข้อมูล)
       let finalHTML = '';
       let renderedCount = 0;
 
-      // สร้างหัวตารางวันที่เตรียมไว้
-      let theadHTML = `<tr><th class="sticky-col">รายการ / วันที่</th>`;
+      // 5. ลูปวาดตารางแยกแต่ละขั้นตอน
+      let theadSubHTML = `<tr><th class="sticky-col">รายการ / วันที่</th>`;
       dateRange.forEach(d => {
         let dObj = new Date(d);
-        theadHTML += `<th>${dObj.getDate().toString().padStart(2,'0')}/${(dObj.getMonth()+1).toString().padStart(2,'0')}</th>`;
+        theadSubHTML += `<th>${dObj.getDate().toString().padStart(2,'0')}/${(dObj.getMonth()+1).toString().padStart(2,'0')}</th>`;
       });
-      theadHTML += `<th class="total-col" style="color:var(--stock-yellow);">รวมทั้งหมด</th></tr>`;
+      theadSubHTML += `<th class="total-col" style="color:var(--stock-yellow);">รวมทั้งหมด</th></tr>`;
 
-      // ลูปวาดตารางแต่ละขั้นตอน โดยกรองเฉพาะอันที่มีข้อมูล
       db.steps.sort((a,b) => (a.id_step||0) - (b.id_step||0)).forEach(step => {
         const stepId = step.id_step;
         const data = agg[stepId];
 
-        // *** เงื่อนไข: ถ้าขั้นตอนไหนไม่มียอดผลิต และ ไม่มียอดชั่วโมงเลย ให้ข้ามไปเลย ไม่ต้องสร้างตาราง ***
-        if (data.totalQty === 0 && data.totalHrs === 0) {
-          return; 
-        }
+        // ซ่อนขั้นตอนที่ไม่มีการผลิต
+        if (data.totalQty === 0 && data.totalHrs === 0) return; 
 
         const stepName = step.step_name || 'Unknown';
 
-        // สร้าง Row 1: ยอดผลิต (QTY)
-        let rowQty = `<tr class="row-qty"><td class="sticky-col"><i class="fa-solid fa-cube"></i> ยอดผลิตรวม (ชิ้น)</td>`;
+        // 1. แถวยอดผลิต
+        let rowQty = `<tr class="row-qty"><td class="sticky-col"><i class="fa-solid fa-cube"></i> ยอดผลิต (ชิ้น)</td>`;
         dateRange.forEach(d => {
           let val = data.daily[d].qty;
           rowQty += `<td class="${val===0?'val-zero':''}">${val.toLocaleString()}</td>`;
         });
         rowQty += `<td class="total-col">${data.totalQty.toLocaleString()}</td></tr>`;
 
-        // สร้าง Row 2: ชั่วโมง (HRS)
-        let rowHrs = `<tr class="row-hrs"><td class="sticky-col"><i class="fa-solid fa-clock"></i> ยอดเวลาทำ (ชม.)</td>`;
+        // 2. แถวเวลาทำ
+        let rowHrs = `<tr class="row-hrs"><td class="sticky-col"><i class="fa-solid fa-clock"></i> เวลาทำ (ชม.)</td>`;
         dateRange.forEach(d => {
           let val = data.daily[d].hrs;
           rowHrs += `<td class="${val===0?'val-zero':''}">${val.toFixed(2)}</td>`;
         });
         rowHrs += `<td class="total-col">${data.totalHrs.toFixed(2)}</td></tr>`;
 
-        // สร้าง Row 3: ต้นทุนต่อหน่วย (COST/UNIT)
+        // 3. แถวต้นทุน/ชิ้น
         let rowCost = `<tr class="row-cost"><td class="sticky-col"><i class="fa-solid fa-baht-sign"></i> ต้นทุน/ชิ้น (บาท)</td>`;
         dateRange.forEach(d => {
           let cQty = data.daily[d].qty;
@@ -372,11 +375,9 @@
           rowCost += `<td class="${costPerUnit===0?'val-zero':''}">${costPerUnit.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 4})}</td>`;
         });
         
-        // Cost Total (Average for this step)
         let totalCostPerUnit = data.totalQty > 0 ? ((data.totalHrs * hourlyRate) / data.totalQty) : 0;
         rowCost += `<td class="total-col">${totalCostPerUnit.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 4})}</td></tr>`;
 
-        // นำมาประกอบเป็น Table พร้อมปุ่มยุบตาราง
         finalHTML += `
           <div class="matrix-container">
             <h3 class="matrix-title" onclick="toggleTable(this)">
@@ -385,7 +386,7 @@
             </h3>
             <div class="table-wrapper">
               <table>
-                <thead>${theadHTML}</thead>
+                <thead>${theadSubHTML}</thead>
                 <tbody>
                   ${rowQty}
                   ${rowHrs}
@@ -415,17 +416,13 @@
   function exportToExcel() {
     let container = document.getElementById("reportContainer").cloneNode(true);
     
-    // หากหน้าจอไหนขึ้นแจ้งเตือนหรือกำลังโหลดอยู่ ไม่ต้อง Export
     if (container.querySelectorAll('table').length === 0) {
-      alert("ไม่มีตารางข้อมูลสำหรับส่งออก");
-      return;
+      alert("ไม่มีตารางข้อมูลสำหรับส่งออก"); return;
     }
 
-    // ลบไอคอนทิ้งเพื่อไม่ให้รกใน Excel
     let icons = container.querySelectorAll('i');
     icons.forEach(i => i.remove());
 
-    // แปลงโครงสร้างให้เข้ากันได้กับไฟล์ Excel พร้อมเพิ่ม Header เข้าไปด้านบน
     let htmlContent = container.innerHTML;
     let excelHtml = `
       <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
