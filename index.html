@@ -410,8 +410,8 @@
     }
   }
 
-  // ==========================================
-  // EXPORT TO EXCEL
+// ==========================================
+  // EXPORT TO EXCEL (จัดรูปแบบตามภาพตัวอย่าง)
   // ==========================================
   function exportToExcel() {
     let container = document.getElementById("reportContainer").cloneNode(true);
@@ -420,20 +420,61 @@
       alert("ไม่มีตารางข้อมูลสำหรับส่งออก"); return;
     }
 
+    // ลบไอคอน (FontAwesome) ทิ้งก่อนส่งออก จะได้ไม่ติดสัญลักษณ์แปลกๆ ไปใน Excel
     let icons = container.querySelectorAll('i');
     icons.forEach(i => i.remove());
 
+    // ดึงโครงสร้างตาราง
     let htmlContent = container.innerHTML;
+    
+    // สร้างโครงสร้างไฟล์ Excel พร้อมฝัง CSS ตกแต่งสีและฟอนต์ตามรูป
     let excelHtml = `
       <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
       <head>
         <meta charset="utf-8">
         <style>
+          /* ตั้งค่าฟอนต์หลักเป็น Tahoma เพื่อให้ดูเป็นทางการแบบในรูป */
+          body { font-family: 'Tahoma', sans-serif; }
+          
+          /* ตกแต่งตารางและเส้นขอบสีดำ */
           table { border-collapse: collapse; margin-bottom: 20px; width: 100%; }
-          th, td { border: 1px solid #000; padding: 5px; text-align: right; }
-          th, .sticky-col { background-color: #f2f2f2; font-weight: bold; text-align: center; }
-          h3 { font-size: 16px; margin: 10px 0; text-align: left; }
-          h2.excel-header { text-align: center; font-size: 20px; margin-bottom: 20px; font-weight: bold; }
+          th, td { border: 1px solid #000000; padding: 5px; font-size: 11pt; text-align: right; }
+          
+          /* หัวตาราง (วันที่และคำว่า รวมทั้งหมด) -> ตัวหนา, ตรงกลาง, สีเขียว */
+          th { background-color: #ffffff; color: #009900; font-weight: bold; text-align: center; }
+          
+          /* คอลัมน์แรกสุด (รายการ / วันที่) -> ชิดซ้าย, ตัวหนา */
+          .sticky-col { text-align: left; background-color: #ffffff; }
+          
+          /* ชื่อขั้นตอน (>> ขั้นตอน: ...) -> สีน้ำเงิน, ชิดซ้าย, ไม่เอาขอบ/พื้นหลัง */
+          h3.matrix-title { 
+            color: #0033cc; 
+            font-size: 11pt; 
+            font-weight: bold; 
+            text-align: left; 
+            margin: 15px 0 5px 0; 
+            background: none; 
+            border: none;
+          }
+          h3.matrix-title span { color: #0033cc; }
+          
+          /* แถวต้นทุน/ชิ้น -> เปลี่ยนข้อความทั้งแถวเป็นสีแดง */
+          tr.row-cost td { color: #ff0000; }
+          
+          /* แถวยอดผลิต และ เวลาทำ -> ตัวอักษรสีดำปกติ (ไม่ต้องประกาศเพิ่มเพราะ Default คือดำ) */
+          tr.row-qty td, tr.row-hrs td { color: #000000; }
+          
+          /* หัวกระดาษสุด -> ตัวหนา สีดำ จัดกึ่งกลาง */
+          h2.excel-header { 
+            text-align: center; 
+            font-size: 16pt; 
+            font-weight: bold; 
+            margin-bottom: 20px; 
+            color: #000000; 
+          }
+          
+          /* บังคับเลข 0 ให้เป็นสีเดียวกับแถวนั้นๆ (ลบสีเทาออก) */
+          .val-zero { color: inherit !important; }
         </style>
       </head>
       <body>
