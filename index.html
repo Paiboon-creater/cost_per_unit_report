@@ -8,7 +8,7 @@
   
   <style>
     /* ==========================================
-       THEME: STOCK MARKET BOARD (DARK MODE)
+       THEME: STOCK MARKET BOARD (DARK Mode)
     ========================================== */
     :root {
       --bg-black: #050505;
@@ -125,36 +125,82 @@
     .loading-msg { text-align: center; padding: 30px; color: var(--stock-blue); font-size: 16px; letter-spacing: 2px; }
 
     /* ==========================================
-       PRINT MEDIA QUERY 
+       PRINT MEDIA QUERY (A4 แนวนอน พื้นหลังสีขาว)
     ========================================== */
     .print-header { display: none; }
 
     @media print {
-      body { background-color: #ffffff; color: #000000; margin: 0; padding: 0; }
+      @page { size: A4 landscape; margin: 10mm; }
+      
+      body { 
+        background-color: #ffffff !important; 
+        color: #000000 !important; 
+        margin: 0; padding: 0; 
+        -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      }
       .no-print { display: none !important; }
       
       .print-header {
-        display: block; text-align: center; margin-bottom: 20px;
+        display: block; text-align: center; margin-bottom: 15px;
         border-bottom: 2px solid #000; padding-bottom: 10px;
       }
-      .print-header h1 { font-size: 20px; margin: 0 0 5px 0; font-family: 'Sarabun', sans-serif; }
-      .print-header p { margin: 0; font-size: 12px; color: #555; }
+      .print-header h1 { font-size: 18px; margin: 0 0 5px 0; font-family: 'Sarabun', sans-serif; }
+      .print-header p { margin: 0; font-size: 11px; color: #555; }
 
+      /* บังคับทุกส่วนของตารางให้เป็นพื้นสีขาวและขอบสีเทา/ดำ */
       .matrix-container { 
-        border: 1px solid #000; margin-bottom: 20px; page-break-inside: avoid; 
+        background-color: #ffffff !important;
+        border: 1px solid #000 !important; 
+        margin-bottom: 15px; 
+        page-break-inside: avoid; 
         overflow: visible !important; 
       }
       .matrix-container.collapsed .table-wrapper { display: block !important; } 
       .table-wrapper { 
+        background-color: #ffffff !important;
         overflow-x: visible !important; 
         overflow-y: visible !important;
       }
       
-      .matrix-title { background: #f0f0f0; color: #000; border-bottom: 2px solid #000; padding: 8px; }
-      table { border-collapse: collapse; width: 100% !important; }
-      th, td { border: 1px solid #ccc; color: #000 !important; padding: 6px; font-size: 12px; }
-      .sticky-col { position: static; background: #f9f9f9; border-right: 1px solid #000; min-width: auto; }
-      .row-cost td { font-weight: bold; }
+      .matrix-title { 
+        background: #f0f0f0 !important; 
+        color: #000 !important; 
+        border-bottom: 2px solid #000 !important; 
+        padding: 6px 10px; font-size: 12px; 
+      }
+      
+      table { 
+        background-color: #ffffff !important;
+        border-collapse: collapse; 
+        width: 100% !important; 
+        white-space: normal !important; 
+      }
+      
+      th, td { 
+        background-color: #ffffff !important;
+        border: 1px solid #ccc !important; 
+        color: #000 !important; 
+        padding: 4px; 
+        font-size: 9.5px; 
+        white-space: nowrap !important; 
+      }
+      th {
+        background-color: #e0e0e0 !important; /* สีเทาอ่อนสำหรับหัวตาราง */
+        font-weight: bold;
+      }
+      
+      .sticky-col { 
+        position: static; 
+        background-color: #f9f9f9 !important; /* สีเทาอ่อนมากๆ สำหรับคอลัมน์รายการ */
+        border-right: 1px solid #000 !important; 
+        min-width: auto; text-align: left;
+      }
+      
+      .total-col { background-color: #f0f0f0 !important; font-weight: bold; }
+      
+      /* ให้แถวปกติ/OT พิมพ์ออกมาเป็นสีดำ และแถวต้นทุนเป็นตัวหนา */
+      tr.row-qty td, tr.row-hrs td { color: #000 !important; }
+      tr.row-cost td { color: #000 !important; font-weight: bold; }
       
       ::-webkit-scrollbar { display: none; } 
     }
@@ -259,7 +305,6 @@
     }
   }
 
-  // ฟังก์ชันสลับการยุบ/ขยายตาราง
   function toggleTable(btn) {
     const container = btn.closest('.matrix-container');
     container.classList.toggle('collapsed');
@@ -295,10 +340,10 @@
 
     try {
       // 1. ดึงข้อมูล
-      const res = await fetch(`${SUPABASE_URL}/daily_production?record_date=gte.${dateFrom}&record_date=lte.${dateTo}`, { headers });
+      const res = await fetch(`${SUPABASE_URL}/daily_production?record_date=gte.${dateFrom}&record_date=lte.${dateTo}&select=id_target,record_date,produced_amount,hour_work,work_period`, { headers });
       const logs = await res.json();
 
-      // 2. สร้าง Array วันที่ เพื่อกางเป็นคอลัมน์
+      // 2. สร้าง Array วันที่
       let dateRange = [];
       let cur = new Date(dateFrom);
       let end = new Date(dateTo);
@@ -311,8 +356,10 @@
       let agg = {}; 
       
       db.steps.forEach(s => {
-        agg[s.id_step] = { totalQty: 0, totalHrs: 0, daily: {} };
-        dateRange.forEach(d => { agg[s.id_step].daily[d] = { qty: 0, hrs: 0 }; });
+        agg[s.id_step] = { totalQty: 0, totalHrsNormal: 0, totalHrsOT: 0, daily: {} };
+        dateRange.forEach(d => { 
+          agg[s.id_step].daily[d] = { qty: 0, hrsNormal: 0, hrsOT: 0 }; 
+        });
       });
 
       // 4. หยอดข้อมูลลงตาราง
@@ -321,12 +368,18 @@
         if (target && target.id_step && agg[target.id_step] && agg[target.id_step].daily[log.record_date]) {
           const qty = log.produced_amount || 0;
           const hrs = log.hour_work || 0;
+          const isOT = String(log.work_period || '').trim().toUpperCase() === 'OT';
 
-          // หยอดของแต่ละขั้นตอน
           agg[target.id_step].daily[log.record_date].qty += qty;
-          agg[target.id_step].daily[log.record_date].hrs += hrs;
           agg[target.id_step].totalQty += qty;
-          agg[target.id_step].totalHrs += hrs;
+
+          if (isOT) {
+            agg[target.id_step].daily[log.record_date].hrsOT += hrs;
+            agg[target.id_step].totalHrsOT += hrs;
+          } else {
+            agg[target.id_step].daily[log.record_date].hrsNormal += hrs;
+            agg[target.id_step].totalHrsNormal += hrs;
+          }
         }
       });
 
@@ -345,12 +398,10 @@
         const stepId = step.id_step;
         const data = agg[stepId];
 
-        // ซ่อนขั้นตอนที่ไม่มีการผลิต
-        if (data.totalQty === 0 && data.totalHrs === 0) return; 
+        if (data.totalQty === 0 && data.totalHrsNormal === 0 && data.totalHrsOT === 0) return; 
 
         const stepName = step.step_name || 'Unknown';
 
-        // 1. แถวยอดผลิต
         let rowQty = `<tr class="row-qty"><td class="sticky-col"><i class="fa-solid fa-cube"></i> ยอดผลิต (ชิ้น)</td>`;
         dateRange.forEach(d => {
           let val = data.daily[d].qty;
@@ -358,24 +409,33 @@
         });
         rowQty += `<td class="total-col">${data.totalQty.toLocaleString()}</td></tr>`;
 
-        // 2. แถวเวลาทำ
-        let rowHrs = `<tr class="row-hrs"><td class="sticky-col"><i class="fa-solid fa-clock"></i> เวลาทำ (ชม.)</td>`;
+        let rowHrsNormal = `<tr class="row-hrs"><td class="sticky-col"><i class="fa-regular fa-clock"></i> เวลาทำปกติ (ชม.)</td>`;
         dateRange.forEach(d => {
-          let val = data.daily[d].hrs;
-          rowHrs += `<td class="${val===0?'val-zero':''}">${val.toFixed(2)}</td>`;
+          let val = data.daily[d].hrsNormal;
+          rowHrsNormal += `<td class="${val===0?'val-zero':''}">${val.toFixed(2)}</td>`;
         });
-        rowHrs += `<td class="total-col">${data.totalHrs.toFixed(2)}</td></tr>`;
+        rowHrsNormal += `<td class="total-col">${data.totalHrsNormal.toFixed(2)}</td></tr>`;
 
-        // 3. แถวต้นทุน/ชิ้น
+        let rowHrsOT = `<tr class="row-hrs"><td class="sticky-col"><i class="fa-solid fa-clock"></i> เวลาทำ OT (ชม.)</td>`;
+        dateRange.forEach(d => {
+          let val = data.daily[d].hrsOT;
+          rowHrsOT += `<td class="${val===0?'val-zero':''}">${val.toFixed(2)}</td>`;
+        });
+        rowHrsOT += `<td class="total-col">${data.totalHrsOT.toFixed(2)}</td></tr>`;
+
         let rowCost = `<tr class="row-cost"><td class="sticky-col"><i class="fa-solid fa-baht-sign"></i> ต้นทุน/ชิ้น (บาท)</td>`;
         dateRange.forEach(d => {
           let cQty = data.daily[d].qty;
-          let cHrs = data.daily[d].hrs;
-          let costPerUnit = cQty > 0 ? ((cHrs * hourlyRate) / cQty) : 0;
+          let cNorm = data.daily[d].hrsNormal;
+          let cOT = data.daily[d].hrsOT;
+          let totalCostInBaht = (cNorm * hourlyRate) + (cOT * hourlyRate * 1.5);
+          let costPerUnit = cQty > 0 ? (totalCostInBaht / cQty) : 0;
+          
           rowCost += `<td class="${costPerUnit===0?'val-zero':''}">${costPerUnit.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 4})}</td>`;
         });
         
-        let totalCostPerUnit = data.totalQty > 0 ? ((data.totalHrs * hourlyRate) / data.totalQty) : 0;
+        let grandTotalCost = (data.totalHrsNormal * hourlyRate) + (data.totalHrsOT * hourlyRate * 1.5);
+        let totalCostPerUnit = data.totalQty > 0 ? (grandTotalCost / data.totalQty) : 0;
         rowCost += `<td class="total-col">${totalCostPerUnit.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 4})}</td></tr>`;
 
         finalHTML += `
@@ -389,7 +449,8 @@
                 <thead>${theadSubHTML}</thead>
                 <tbody>
                   ${rowQty}
-                  ${rowHrs}
+                  ${rowHrsNormal}
+                  ${rowHrsOT}
                   ${rowCost}
                 </tbody>
               </table>
@@ -410,11 +471,8 @@
     }
   }
 
-// ==========================================
-  // EXPORT TO EXCEL (จัดรูปแบบตามภาพตัวอย่าง)
   // ==========================================
-  // ==========================================
-  // EXPORT TO EXCEL (จัดรูปแบบเป๊ะตามไฟล์ภาพ)
+  // EXPORT TO EXCEL
   // ==========================================
   function exportToExcel() {
     let container = document.getElementById("reportContainer").cloneNode(true);
@@ -423,58 +481,30 @@
       alert("ไม่มีตารางข้อมูลสำหรับส่งออก"); return;
     }
 
-    // ลบไอคอนทิ้งก่อนส่งออก เพื่อไม่ให้มีสัญลักษณ์แปลกๆ ไปโผล่ใน Excel
     let icons = container.querySelectorAll('i');
     icons.forEach(i => i.remove());
 
     let htmlContent = container.innerHTML;
     
-    // โครงสร้างไฟล์ Excel พร้อมฝัง CSS ตกแต่งสีฟอนต์และเส้นขอบตามรูป
     let excelHtml = `
       <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
       <head>
         <meta charset="utf-8">
         <style>
-          /* ฟอนต์มาตรฐาน Excel */
           body { font-family: 'Tahoma', 'Arial', sans-serif; }
-          
-          /* กำหนดเส้นตารางสีดำชัดเจน */
           table { border-collapse: collapse; margin-bottom: 20px; width: 100%; }
           th, td { border: 1px solid #000000; padding: 4px; font-size: 10pt; text-align: right; }
-          
-          /* แถวหัวตาราง (วันที่) -> สีเขียว, จัดกึ่งกลาง */
           th { color: #008000; text-align: center; font-weight: normal; }
-          
-          /* คอลัมน์แรก (รายการ/วันที่) -> จัดชิดซ้าย */
           .sticky-col { text-align: left; }
-          
-          /* แถวยอดผลิต และ เวลาทำ -> สีดำ */
           tr.row-qty td, tr.row-qty td.sticky-col { color: #000000; }
           tr.row-hrs td, tr.row-hrs td.sticky-col { color: #000000; }
-          
-          /* แถวต้นทุน/ชิ้น -> สีแดง */
           tr.row-cost td, tr.row-cost td.sticky-col { color: #ff0000; }
-          
-          /* หัวข้อขั้นตอน (>> ขั้นตอน: ...) -> สีน้ำเงิน ไม่มีกรอบ */
           h3.matrix-title { 
-            color: #0000ff; 
-            font-size: 11pt; 
-            text-align: left; 
-            margin: 15px 0 5px 0; 
-            font-weight: normal; 
-            border: none;
-            background: none;
+            color: #0000ff; font-size: 11pt; text-align: left; margin: 15px 0 5px 0; font-weight: normal; 
+            border: none; background: none;
           }
           h3.matrix-title span { color: #0000ff; }
-          
-          /* หัวกระดาษสุด (ชื่อรายงาน) -> สีดำ ตัวใหญ่ จัดกึ่งกลาง */
-          h2.excel-header { 
-            text-align: center; 
-            font-size: 16pt; 
-            font-weight: normal; 
-            margin-bottom: 20px; 
-            color: #000000; 
-          }
+          h2.excel-header { text-align: center; font-size: 16pt; font-weight: normal; margin-bottom: 20px; color: #000000; }
         </style>
       </head>
       <body>
