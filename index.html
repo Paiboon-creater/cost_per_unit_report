@@ -39,6 +39,7 @@
       color: var(--stock-blue); padding: 8px 16px; border-radius: 4px;
       text-decoration: none; font-weight: bold; font-size: 14px;
       display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s;
+      cursor: pointer;
     }
     .nav-btn:hover { 
       background: var(--stock-blue); color: var(--bg-black); 
@@ -124,6 +125,34 @@
 
     .loading-msg { text-align: center; padding: 30px; color: var(--stock-blue); font-size: 16px; letter-spacing: 2px; }
 
+    /* Modal คู่มือ */
+    .modal-overlay {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(5, 5, 5, 0.85); z-index: 2000;
+      justify-content: center; align-items: center; padding: 20px;
+      backdrop-filter: blur(5px);
+    }
+    .manual-box {
+      width: 100%; max-width: 700px; max-height: 85vh;
+      background: var(--panel-bg); border: 2px solid var(--stock-blue);
+      border-radius: 8px; padding: 25px; overflow-y: auto;
+      box-shadow: 0 0 25px rgba(0, 204, 255, 0.2); font-family: inherit;
+      color: var(--text-main);
+    }
+    .manual-header {
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px dashed var(--border-dark); padding-bottom: 10px; margin-bottom: 15px;
+    }
+    .manual-box h3 { color: var(--stock-blue); margin: 0; font-weight: bold; }
+    .manual-box h5 { color: var(--stock-yellow); margin-top: 20px; margin-bottom: 10px; font-weight: bold; }
+    .manual-box p, .manual-box li { font-size: 13px; line-height: 1.6; color: #cccccc; }
+    .manual-box ul { padding-left: 20px; margin-bottom: 15px; }
+    .close-modal-btn {
+      background: transparent; border: 1px solid var(--stock-red); color: var(--stock-red);
+      padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 20px; width: 100%;
+    }
+    .close-modal-btn:hover { background: var(--stock-red); color: #000; }
+
     /* ==========================================
        PRINT MEDIA QUERY (A4 แนวนอน พื้นหลังสีขาว)
     ========================================== */
@@ -147,7 +176,6 @@
       .print-header h1 { font-size: 18px; margin: 0 0 5px 0; font-family: 'Sarabun', sans-serif; }
       .print-header p { margin: 0; font-size: 11px; color: #555; }
 
-      /* บังคับทุกส่วนของตารางให้เป็นพื้นสีขาวและขอบสีเทา/ดำ */
       .matrix-container { 
         background-color: #ffffff !important;
         border: 1px solid #000 !important; 
@@ -185,20 +213,19 @@
         white-space: nowrap !important; 
       }
       th {
-        background-color: #e0e0e0 !important; /* สีเทาอ่อนสำหรับหัวตาราง */
+        background-color: #e0e0e0 !important;
         font-weight: bold;
       }
       
       .sticky-col { 
         position: static; 
-        background-color: #f9f9f9 !important; /* สีเทาอ่อนมากๆ สำหรับคอลัมน์รายการ */
+        background-color: #f9f9f9 !important;
         border-right: 1px solid #000 !important; 
         min-width: auto; text-align: left;
       }
       
       .total-col { background-color: #f0f0f0 !important; font-weight: bold; }
       
-      /* ให้แถวปกติ/OT พิมพ์ออกมาเป็นสีดำ และแถวต้นทุนเป็นตัวหนา */
       tr.row-qty td, tr.row-hrs td { color: #000 !important; }
       tr.row-cost td { color: #000 !important; font-weight: bold; }
       
@@ -210,7 +237,10 @@
 
 <div class="container">
   
-  <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;" class="no-print">
+  <div style="display: flex; justify-content: flex-end; margin-bottom: 10px; gap: 10px;" class="no-print">
+    <button class="nav-btn" onclick="openManual()" style="border-color: var(--stock-yellow); color: var(--stock-yellow);">
+      <i class="fa-solid fa-book"></i> คู่มือ
+    </button>
     <a href="https://paiboon-creater.github.io/Data_Information_Jaguar_productions/" class="nav-btn">
       <i class="fa-solid fa-house"></i> HOME APP
     </a>
@@ -262,6 +292,46 @@
     <div class="loading-msg" style="color:var(--text-muted)">รอการประมวลผล... กรุณากด "ประมวลผลตาราง"</div>
   </div>
 
+</div>
+
+<!-- Modal คู่มือการใช้งาน -->
+<div id="manualModal" class="modal-overlay no-print">
+  <div class="manual-box">
+    <div class="manual-header">
+      <h3><i class="fa-solid fa-book-open"></i> คู่มือการใช้งาน COST MATRIX</h3>
+      <button class="btn btn-calc" onclick="printManual()" style="padding: 6px 12px; font-size: 12px;">
+        <i class="fa-solid fa-print"></i> พิมพ์คู่มือ
+      </button>
+    </div>
+    
+    <div id="manualContent">
+      <h5>1. การตั้งค่าตัวแปร (Parameters)</h5>
+      <ul>
+        <li><b>ตั้งแต่วันที่ / ถึงวันที่:</b> กำหนดช่วงเวลาที่ต้องการดึงข้อมูลการผลิต</li>
+        <li><b>ค่าแรงพนักงาน (บาท/วัน):</b> ระบุค่าแรงพื้นฐานต่อวัน เพื่อใช้คำนวณต้นทุน (ค่าเริ่มต้น 400 บาท)</li>
+        <li><b>ชั่วโมงงานปกติ (ชม./วัน):</b> ระบุจำนวนชั่วโมงการทำงานปกติใน 1 วัน เพื่อหาเรทต่อชั่วโมง (ค่าเริ่มต้น 8 ชั่วโมง)</li>
+      </ul>
+
+      <h5>2. การประมวลผลและอ่านผลลัพธ์ (Matrix Table)</h5>
+      <p>เมื่อกดปุ่ม "ประมวลผลตาราง" ระบบจะดึงข้อมูลมาแสดงแยกตาม <b>ขั้นตอนการผลิต</b> (เช่น ตัดเหรียญมือ, รีดใบ) โดยในแต่ละตารางจะแสดง:</p>
+      <ul>
+        <li><b>ยอดผลิต (ชิ้น):</b> จำนวนชิ้นงานรวมที่ทำได้ในวันนั้นๆ</li>
+        <li><b>เวลาทำปกติ (ชม.):</b> จำนวนชั่วโมงการทำงานในกะปกติ</li>
+        <li><b>เวลาทำ OT (ชม.):</b> จำนวนชั่วโมงการทำงานล่วงเวลา (OT)</li>
+        <li><b>ต้นทุน/ชิ้น (บาท):</b> ค่าแรงเฉลี่ยต่อ 1 ชิ้นงาน <br>
+            <i style="color:#aaa;">สูตรการคำนวณ: [(ชั่วโมงปกติ × เรทปกติ) + (ชั่วโมง OT × เรทปกติ × 1.5)] ÷ ยอดผลิต</i></li>
+      </ul>
+      <p>*คุณสามารถ <b>คลิกที่แถบชื่อขั้นตอน</b> เพื่อยุบหรือขยายตารางของขั้นตอนนั้นๆ ได้</p>
+
+      <h5>3. การส่งออกเอกสารและการพิมพ์ (Export & Print)</h5>
+      <ul>
+        <li><b>ส่งออก EXCEL:</b> แปลงข้อมูลทั้งหมดที่แสดงอยู่บนหน้าจอเป็นไฟล์ .xls</li>
+        <li><b>พิมพ์รายงาน (PRINT):</b> สั่งพิมพ์เอกสารออกทางหน้ากระดาษ ระบบจะปรับมุมมองเป็นกระดาษ A4 แนวนอน และพื้นหลังสีขาวให้อัตโนมัติ</li>
+      </ul>
+    </div>
+
+    <button type="button" class="close-modal-btn" onclick="closeManual()">ปิดหน้าต่างคู่มือ</button>
+  </div>
 </div>
 
 <script>
@@ -522,6 +592,50 @@
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+  }
+
+  // ==========================================
+  // MANUAL MODAL FUNCTIONS
+  // ==========================================
+  function openManual() {
+    document.getElementById('manualModal').style.display = 'flex';
+  }
+
+  function closeManual() {
+    document.getElementById('manualModal').style.display = 'none';
+  }
+
+  function printManual() {
+    const manualContent = document.getElementById('manualContent').innerHTML;
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <html>
+      <head>
+        <title>คู่มือการใช้งาน COST MATRIX</title>
+        <style>
+          @page { size: A4 portrait; margin: 20mm; }
+          body { font-family: 'Sarabun', Tahoma, sans-serif; color: #000; line-height: 1.6; }
+          h3 { border-bottom: 2px solid #000; padding-bottom: 10px; text-align: center; font-size: 22px; margin-top: 0; }
+          h5 { margin-top: 25px; font-size: 18px; color: #333; }
+          ul { padding-left: 20px; }
+          li { margin-bottom: 8px; font-size: 14px; }
+          p { font-size: 14px; }
+          b { color: #000; }
+          i { color: #555; font-size: 13px; }
+        </style>
+      </head>
+      <body>
+        <h3>คู่มือการใช้งาน COST MATRIX</h3>
+        ${manualContent}
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 300);
   }
 </script>
 </body>
