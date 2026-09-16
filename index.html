@@ -8,24 +8,24 @@
   
   <style>
     /* ==========================================
-        THEME: STOCK MARKET BOARD (DARK Mode)
+        THEME: CLEAN LIGHT BOARD (White Mode)
     ========================================== */
     :root {
-      --bg-black: #050505;
-      --panel-bg: #111111;
-      --border-dark: #333333;
-      --text-main: #e0e0e0;
-      --text-muted: #888888;
-      --stock-green: #00ff00;
-      --stock-red: #ff3333;
-      --stock-yellow: #ffcc00;
-      --stock-blue: #00ccff;
-      --highlight: #1a1a1a;
+      --bg-light: #f4f6f9;
+      --panel-bg: #ffffff;
+      --border-dark: #dcdcdc;
+      --text-main: #333333;
+      --text-muted: #666666;
+      --stock-green: #008800;
+      --stock-red: #cc0000;
+      --stock-yellow: #d18b00;
+      --stock-blue: #0066cc;
+      --highlight: #f8f9fa;
     }
 
     body {
-      font-family: 'Courier New', Courier, monospace, 'Sarabun', sans-serif;
-      background-color: var(--bg-black);
+      font-family: 'Sarabun', 'Courier New', Courier, monospace, sans-serif;
+      background-color: var(--bg-light);
       color: var(--text-main);
       margin: 0; padding: 15px;
       font-size: 13px;
@@ -35,15 +35,15 @@
 
     /* HOME NAV BUTTON */
     .nav-btn {
-      background: rgba(0, 204, 255, 0.1); border: 1px solid var(--stock-blue);
+      background: rgba(0, 102, 204, 0.08); border: 1px solid var(--stock-blue);
       color: var(--stock-blue); padding: 8px 16px; border-radius: 4px;
       text-decoration: none; font-weight: bold; font-size: 14px;
       display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s;
       cursor: pointer;
     }
     .nav-btn:hover { 
-      background: var(--stock-blue); color: var(--bg-black); 
-      box-shadow: 0 0 10px rgba(0, 204, 255, 0.5); 
+      background: var(--stock-blue); color: #ffffff; 
+      box-shadow: 0 0 10px rgba(0, 102, 204, 0.3); 
     }
 
     /* HEADER */
@@ -52,106 +52,111 @@
       border-bottom: 2px solid var(--border-dark); padding-bottom: 10px; margin-bottom: 15px;
     }
     .app-title {
-      font-size: 24px; font-weight: bold; color: var(--stock-yellow); margin: 0;
-      letter-spacing: 2px; text-transform: uppercase;
+      font-size: 24px; font-weight: bold; color: #111111; margin: 0;
+      letter-spacing: 1px; text-transform: uppercase;
     }
     
     /* TOOLBAR & FILTERS */
     .toolbar {
       background: var(--panel-bg); border: 1px solid var(--border-dark);
-      padding: 15px; border-radius: 4px; margin-bottom: 20px;
+      padding: 15px; border-radius: 6px; margin-bottom: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
     .filter-grid {
       display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 15px;
     }
     .filter-group { display: flex; flex-direction: column; gap: 5px; }
-    .filter-group label { color: var(--text-muted); font-size: 11px; text-transform: uppercase; }
+    .filter-group label { color: var(--text-muted); font-size: 11px; text-transform: uppercase; font-weight: bold; }
     .filter-group input {
-      background: #000; border: 1px solid #444; color: var(--stock-yellow);
-      padding: 8px; font-family: inherit; font-size: 14px; border-radius: 2px;
+      background: #ffffff; border: 1px solid #ccc; color: #000;
+      padding: 8px; font-family: inherit; font-size: 14px; border-radius: 4px;
     }
-    .filter-group input:focus { border-color: var(--stock-blue); outline: none; }
-    .filter-group input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1) sepia(1) saturate(5) hue-rotate(175deg); cursor: pointer; }
+    .filter-group input:focus { border-color: var(--stock-blue); outline: none; box-shadow: 0 0 5px rgba(0,102,204,0.2); }
 
     .action-buttons {
       display: flex; gap: 10px; justify-content: flex-start;
       padding-top: 15px; border-top: 1px dashed var(--border-dark); flex-wrap: wrap;
     }
     .btn {
-      padding: 8px 16px; border-radius: 2px; font-family: inherit; font-weight: bold;
+      padding: 8px 16px; border-radius: 4px; font-family: inherit; font-weight: bold;
       cursor: pointer; display: inline-flex; align-items: center; gap: 8px; text-transform: uppercase;
-      border: 1px solid; transition: all 0.2s; background: #000;
+      border: 1px solid; transition: all 0.2s; background: #ffffff;
     }
-    .btn-calc { color: var(--stock-yellow); border-color: var(--stock-yellow); }
-    .btn-calc:hover { background: var(--stock-yellow); color: #000; }
+    .btn-calc { color: #b37400; border-color: #d18b00; }
+    .btn-calc:hover { background: #d18b00; color: #fff; }
     .btn-export { color: var(--stock-green); border-color: var(--stock-green); }
-    .btn-export:hover { background: var(--stock-green); color: #000; }
-    .btn-print { color: var(--text-main); border-color: var(--text-main); }
-    .btn-print:hover { background: var(--text-main); color: #000; }
+    .btn-export:hover { background: var(--stock-green); color: #fff; }
+    .btn-print { color: #333; border-color: #666; }
+    .btn-print:hover { background: #333; color: #fff; }
 
     /* MATRIX TABLE STYLE */
-    .matrix-container { margin-bottom: 20px; border: 1px solid var(--border-dark); background: var(--panel-bg); border-radius: 4px; overflow: hidden; }
+    .matrix-container { 
+      margin-bottom: 20px; border: 1px solid var(--border-dark); 
+      background: var(--panel-bg); border-radius: 6px; overflow: hidden; 
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
     .matrix-title {
-      background: linear-gradient(90deg, #1a1a1a, #000); color: var(--stock-yellow);
-      padding: 12px 15px; margin: 0; font-size: 16px; font-weight: bold;
-      border-bottom: 2px solid var(--stock-yellow);
+      background: linear-gradient(90deg, #eaeaea, #f9f9f9); color: #111111;
+      padding: 12px 15px; margin: 0; font-size: 15px; font-weight: bold;
+      border-bottom: 2px solid var(--stock-blue);
       cursor: pointer; display: flex; justify-content: space-between; align-items: center;
       transition: background 0.3s;
     }
-    .matrix-title:hover { background: #222; }
+    .matrix-title:hover { background: #e0e0e0; }
     
     .table-wrapper { overflow-x: auto; transition: max-height 0.3s ease-out; }
     .matrix-container.collapsed .table-wrapper { display: none; }
     .matrix-container.collapsed .matrix-title { border-bottom: none; }
 
     table { width: 100%; border-collapse: collapse; text-align: right; white-space: nowrap; }
-    th, td { padding: 10px; border-bottom: 1px solid #1a1a1a; border-right: 1px dotted #333; }
-    th { color: var(--text-muted); font-weight: normal; background: #000; text-align: center; }
+    th, td { padding: 10px; border-bottom: 1px solid #eeeeee; border-right: 1px dotted #e0e0e0; }
+    th { color: #555555; font-weight: bold; background: #f8f9fa; text-align: center; font-size: 12px; }
     td:last-child, th:last-child { border-right: none; }
     
     .sticky-col {
-      position: sticky; left: 0; background: #050505; z-index: 2; text-align: left;
+      position: sticky; left: 0; background: #ffffff; z-index: 2; text-align: left;
       font-weight: bold; color: var(--stock-blue); border-right: 2px solid var(--border-dark);
-      min-width: 130px; 
+      min-width: 140px; 
       font-size: 12px;
     }
     
-    .row-qty td { color: var(--text-main); }
-    .row-hrs td { color: var(--text-muted); }
+    .row-qty td { color: #222222; }
+    .row-hrs td { color: #666666; }
     .row-cost td { color: var(--stock-green); font-weight: bold; }
     
-    .total-col { background: rgba(255, 204, 0, 0.05); font-weight: bold; }
-    .val-zero { color: #444 !important; } 
+    .total-col { background: rgba(0, 102, 204, 0.04); font-weight: bold; color: #000; }
+    .val-zero { color: #cccccc !important; } 
 
-    .loading-msg { text-align: center; padding: 30px; color: var(--stock-blue); font-size: 16px; letter-spacing: 2px; }
+    .loading-msg { text-align: center; padding: 30px; color: var(--stock-blue); font-size: 15px; letter-spacing: 1px; font-weight: bold; }
 
     /* Modal คู่มือ */
     .modal-overlay {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(5, 5, 5, 0.85); z-index: 2000;
+      background: rgba(0, 0, 0, 0.5); z-index: 2000;
       justify-content: center; align-items: center; padding: 20px;
-      backdrop-filter: blur(5px);
+      backdrop-filter: blur(3px);
     }
     .manual-box {
       width: 100%; max-width: 700px; max-height: 85vh;
-      background: var(--panel-bg); border: 2px solid var(--stock-blue);
+      background: #ffffff; border: 1px solid #ccc;
       border-radius: 8px; padding: 25px; overflow-y: auto;
-      box-shadow: 0 0 25px rgba(0, 204, 255, 0.2); font-family: inherit;
-      color: var(--text-main);
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15); font-family: inherit;
+      color: #333333;
     }
     .manual-header {
       display: flex; justify-content: space-between; align-items: center;
-      border-bottom: 1px dashed var(--border-dark); padding-bottom: 10px; margin-bottom: 15px;
+      border-bottom: 1px solid #dddddd; padding-bottom: 10px; margin-bottom: 15px;
     }
     .manual-box h3 { color: var(--stock-blue); margin: 0; font-weight: bold; }
-    .manual-box h5 { color: var(--stock-yellow); margin-top: 20px; margin-bottom: 10px; font-weight: bold; }
-    .manual-box p, .manual-box li { font-size: 13px; line-height: 1.6; color: #cccccc; }
+    .manual-box h5 { color: #222; margin-top: 20px; margin-bottom: 10px; font-weight: bold; border-left: 3px solid var(--stock-blue); padding-left: 8px; }
+    .manual-box p, .manual-box li { font-size: 13px; line-height: 1.6; color: #444444; }
     .manual-box ul { padding-left: 20px; margin-bottom: 15px; }
     .close-modal-btn {
-      background: transparent; border: 1px solid var(--stock-red); color: var(--stock-red);
+      background: #f4f4f4; border: 1px solid #cc0000; color: #cc0000;
       padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 20px; width: 100%;
+      transition: 0.2s;
     }
-    .close-modal-btn:hover { background: var(--stock-red); color: #000; }
+    .close-modal-btn:hover { background: #cc0000; color: #fff; }
 
     /* ==========================================
         PRINT MEDIA QUERY (A4 แนวนอน พื้นหลังสีขาว)
@@ -182,6 +187,7 @@
         margin-bottom: 15px; 
         page-break-inside: avoid; 
         overflow: visible !important; 
+        box-shadow: none !important;
       }
       .matrix-container.collapsed .table-wrapper { display: block !important; } 
       .table-wrapper { 
@@ -238,7 +244,7 @@
 <div class="container">
   
   <div style="display: flex; justify-content: flex-end; margin-bottom: 10px; gap: 10px;" class="no-print">
-    <button class="nav-btn" onclick="openManual()" style="border-color: var(--stock-yellow); color: var(--stock-yellow);">
+    <button class="nav-btn" onclick="openManual()" style="border-color: var(--stock-blue); color: var(--stock-blue);">
       <i class="fa-solid fa-book"></i> คู่มือ
     </button>
     <a href="https://paiboon-creater.github.io/Data_Information_Jaguar_productions/" class="nav-btn">
@@ -248,7 +254,7 @@
 
   <div class="app-header no-print">
     <div>
-      <h1 class="app-title"><i class="fa-solid fa-layer-group"></i> รายงานต้นทุนต่อหน่วย แยกตามขั้นตอนผลิต</h1>
+      <h1 class="app-title"><i class="fa-solid fa-layer-group" style="color:var(--stock-blue);"></i> รายงานต้นทุนต่อหน่วย แยกตามขั้นตอนผลิต</h1>
       <div style="color: var(--text-muted); font-size: 12px; margin-top: 5px;">รายงานต้นทุนการผลิตแยกตามขั้นตอน (Pivot Format)</div>
     </div>
   </div>
@@ -319,7 +325,7 @@
         <li><b>เวลาทำปกติ (ชม.):</b> จำนวนชั่วโมงการทำงานในกะปกติ</li>
         <li><b>เวลาทำ OT (ชม.):</b> จำนวนชั่วโมงการทำงานล่วงเวลา (OT)</li>
         <li><b>ต้นทุน/ชิ้น (บาท):</b> ค่าแรงเฉลี่ยต่อ 1 ชิ้นงาน <br>
-            <i style="color:#aaa;">สูตรการคำนวณ: [(ชั่วโมงปกติ × เรทปกติ) + (ชั่วโมง OT × เรทปกติ × 1.5)] ÷ ยอดผลิต</i></li>
+            <i style="color:#666;">สูตรการคำนวณ: [(ชั่วโมงปกติ × เรทปกติ) + (ชั่วโมง OT × เรทปกติ × 1.5)] ÷ ยอดผลิต</i></li>
       </ul>
       <p>*คุณสามารถ <b>คลิกที่แถบชื่อขั้นตอน</b> เพื่อยุบหรือขยายตารางของขั้นตอนนั้นๆ ได้</p>
 
@@ -349,7 +355,6 @@
   let db = { targets: [], steps: [] };
 
   window.onload = async function() {
-    // คำนวณช่วงวันที่ให้อยู่ในเดือนล่าสุด และให้วันปัจจุบันอยู่กึ่งกลางค่อนไปทางขวา
     const today = new Date();
     
     let dFrom = new Date(today);
@@ -365,8 +370,6 @@
     document.getElementById('printTimestamp').innerText = `${now.toLocaleDateString('th-TH')} ${now.toLocaleTimeString('th-TH')}`;
     
     await initDatabase();
-    
-    // กดประมวลผลอัตโนมัติทันทีเพื่อให้เห็นข้อมูลทันที
     generateMatrix();
   };
 
@@ -417,14 +420,12 @@
       alert("วันที่เริ่มต้น ต้องน้อยกว่าหรือเท่ากับวันที่สิ้นสุด"); return;
     }
 
-    container.innerHTML = '<div class="loading-msg"><i class="fa-solid fa-spinner fa-spin"></i> FETCHING DATA STREAM...</div>';
+    container.innerHTML = '<div class="loading-msg"><i class="fa-solid fa-spinner fa-spin"></i> กำลังประมวลผลข้อมูล...</div>';
 
     try {
-      // 1. ดึงข้อมูล
       const res = await fetch(`${SUPABASE_URL}/daily_production?record_date=gte.${dateFrom}&record_date=lte.${dateTo}&select=id_target,record_date,produced_amount,hour_work,work_period`, { headers });
       const logs = await res.json();
 
-      // 2. สร้าง Array วันที่
       let dateRange = [];
       let cur = new Date(dateFrom);
       let end = new Date(dateTo);
@@ -433,7 +434,6 @@
         cur.setDate(cur.getDate() + 1);
       }
 
-      // 3. เตรียม Data Structure สำหรับจัดกลุ่มแยกขั้นตอน
       let agg = {}; 
       
       db.steps.forEach(s => {
@@ -443,7 +443,6 @@
         });
       });
 
-      // 4. หยอดข้อมูลลงตาราง
       logs.forEach(log => {
         const target = db.targets.find(t => String(t.id_target) === String(log.id_target));
         if (target && target.id_step && agg[target.id_step] && agg[target.id_step].daily[log.record_date]) {
@@ -467,13 +466,12 @@
       let finalHTML = '';
       let renderedCount = 0;
 
-      // 5. ลูปวาดตารางแยกแต่ละขั้นตอน
       let theadSubHTML = `<tr><th class="sticky-col">รายการ / วันที่</th>`;
       dateRange.forEach(d => {
         let dObj = new Date(d);
         theadSubHTML += `<th>${dObj.getDate().toString().padStart(2,'0')}/${(dObj.getMonth()+1).toString().padStart(2,'0')}</th>`;
       });
-      theadSubHTML += `<th class="total-col" style="color:var(--stock-yellow);">รวมทั้งหมด</th></tr>`;
+      theadSubHTML += `<th class="total-col" style="color:#0066cc;">รวมทั้งหมด</th></tr>`;
 
       db.steps.sort((a,b) => (a.id_step||0) - (b.id_step||0)).forEach(step => {
         const stepId = step.id_step;
@@ -546,7 +544,6 @@
       } else {
         container.innerHTML = finalHTML;
         
-        // เลื่อนตารางไปทางขวาอัตโนมัติเพื่อให้วันปัจจุบันอยู่กึ่งกลางค่อนไปทางขวา
         setTimeout(() => {
           document.querySelectorAll('.table-wrapper').forEach(wrapper => {
             wrapper.scrollLeft = wrapper.scrollWidth * 0.7;
@@ -586,7 +583,7 @@
           .sticky-col { text-align: left; }
           tr.row-qty td, tr.row-qty td.sticky-col { color: #000000; }
           tr.row-hrs td, tr.row-hrs td.sticky-col { color: #000000; }
-          tr.row-cost td, tr.row-cost td.sticky-col { color: #ff0000; }
+          tr.row-cost td, tr.row-cost td.sticky-col { color: #008000; }
           h3.matrix-title { 
             color: #0000ff; font-size: 11pt; text-align: left; margin: 15px 0 5px 0; font-weight: normal; 
             border: none; background: none;
