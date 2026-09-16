@@ -8,7 +8,7 @@
   
   <style>
     /* ==========================================
-       THEME: STOCK MARKET BOARD (DARK Mode)
+        THEME: STOCK MARKET BOARD (DARK Mode)
     ========================================== */
     :root {
       --bg-black: #050505;
@@ -154,7 +154,7 @@
     .close-modal-btn:hover { background: var(--stock-red); color: #000; }
 
     /* ==========================================
-       PRINT MEDIA QUERY (A4 แนวนอน พื้นหลังสีขาว)
+        PRINT MEDIA QUERY (A4 แนวนอน พื้นหลังสีขาว)
     ========================================== */
     .print-header { display: none; }
 
@@ -248,14 +248,14 @@
 
   <div class="app-header no-print">
     <div>
-      <h1 class="app-title"><i class="fa-solid fa-layer-group"></i> COST MATRIX BOARD</h1>
+      <h1 class="app-title"><i class="fa-solid fa-layer-group"></i> รายงานต้นทุนต่อหน่วย แยกตามขั้นตอนผลิต</h1>
       <div style="color: var(--text-muted); font-size: 12px; margin-top: 5px;">รายงานต้นทุนการผลิตแยกตามขั้นตอน (Pivot Format)</div>
     </div>
   </div>
 
   <!-- PRINT ONLY HEADER -->
   <div class="print-header">
-    <h1>สรุปรายงานต้นทุนการผลิต ต่อหน่วยแยกตามขั้นตอนการผลิต โรงงาน BC</h1>
+    <h1>รายงานต้นทุนต่อหน่วย แยกตามขั้นตอนผลิต</h1>
     <p>พิมพ์เมื่อ: <span id="printTimestamp"></span></p>
   </div>
 
@@ -313,7 +313,7 @@
       </ul>
 
       <h5>2. การประมวลผลและอ่านผลลัพธ์ (Matrix Table)</h5>
-      <p>เมื่อกดปุ่ม "ประมวลผลตาราง" ระบบจะดึงข้อมูลมาแสดงแยกตาม <b>ขั้นตอนการผลิต</b> (เช่น ตัดเหรียญมือ, รีดใบ) โดยในแต่ละตารางจะแสดง:</p>
+      <p>เมื่อเข้าสู่ระบบ ระบบจะดึงข้อมูลเดือนล่าสุดมาแสดงให้อัตโนมัติ โดยจัดให้วันปัจจุบันอยู่กึ่งกลางค่อนไปทางขวา และแสดงข้อมูลแยกตาม <b>ขั้นตอนการผลิต</b> โดยในแต่ละตารางจะแสดง:</p>
       <ul>
         <li><b>ยอดผลิต (ชิ้น):</b> จำนวนชิ้นงานรวมที่ทำได้ในวันนั้นๆ</li>
         <li><b>เวลาทำปกติ (ชม.):</b> จำนวนชั่วโมงการทำงานในกะปกติ</li>
@@ -349,14 +349,25 @@
   let db = { targets: [], steps: [] };
 
   window.onload = async function() {
+    // คำนวณช่วงวันที่ให้อยู่ในเดือนล่าสุด และให้วันปัจจุบันอยู่กึ่งกลางค่อนไปทางขวา
     const today = new Date();
-    document.getElementById('date_from').valueAsDate = today;
-    document.getElementById('date_to').valueAsDate = today;
+    
+    let dFrom = new Date(today);
+    dFrom.setDate(today.getDate() - 22);
+    
+    let dTo = new Date(today);
+    dTo.setDate(today.getDate() + 7);
+
+    document.getElementById('date_from').value = dFrom.toISOString().split('T')[0];
+    document.getElementById('date_to').value = dTo.toISOString().split('T')[0];
     
     let now = new Date();
     document.getElementById('printTimestamp').innerText = `${now.toLocaleDateString('th-TH')} ${now.toLocaleTimeString('th-TH')}`;
     
     await initDatabase();
+    
+    // กดประมวลผลอัตโนมัติทันทีเพื่อให้เห็นข้อมูลทันที
+    generateMatrix();
   };
 
   async function initDatabase() {
@@ -534,6 +545,13 @@
         container.innerHTML = '<div class="loading-msg" style="color:var(--text-muted)">ไม่มีข้อมูลการผลิตในช่วงวันที่นี้</div>';
       } else {
         container.innerHTML = finalHTML;
+        
+        // เลื่อนตารางไปทางขวาอัตโนมัติเพื่อให้วันปัจจุบันอยู่กึ่งกลางค่อนไปทางขวา
+        setTimeout(() => {
+          document.querySelectorAll('.table-wrapper').forEach(wrapper => {
+            wrapper.scrollLeft = wrapper.scrollWidth * 0.7;
+          });
+        }, 100);
       }
 
     } catch (error) {
@@ -578,7 +596,7 @@
         </style>
       </head>
       <body>
-        <h2 class="excel-header">สรุปรายงานต้นทุนการผลิต ต่อหน่วยแยกตามขั้นตอนการผลิต โรงงาน BC</h2>
+        <h2 class="excel-header">รายงานต้นทุนต่อหน่วย แยกตามขั้นตอนผลิต</h2>
         ${htmlContent}
       </body>
       </html>
