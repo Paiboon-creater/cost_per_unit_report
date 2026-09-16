@@ -8,19 +8,21 @@
   
   <style>
     /* ==========================================
-        THEME: CLEAN LIGHT BOARD (White Mode)
+        THEME: CLEAN LIGHT BOARD (Custom Colors)
     ========================================== */
     :root {
       --bg-light: #f4f6f9;
       --panel-bg: #ffffff;
-      --border-dark: #dcdcdc;
-      --text-main: #333333;
-      --text-muted: #666666;
-      --stock-green: #008800;
-      --stock-red: #cc0000;
-      --stock-yellow: #d18b00;
-      --stock-blue: #0066cc;
-      --highlight: #f8f9fa;
+      --border-dark: #cccccc;
+      --text-main: #111111;
+      --text-muted: #444444;
+      --stock-blue: #0055b3;
+      
+      /* สีตามที่ต้องการ */
+      --color-qty: #0066cc;     /* ยอดผลิต: สีฟ้า */
+      --color-normal: #008800;  /* เวลาปกติ: สีเขียว */
+      --color-ot: #b38600;      /* เวลาโอที: สีเหลือง (ปรับให้เข้มขึ้นเล็กน้อยเพื่อให้มองเห็นชัดบนพื้นขาว) */
+      --color-cost: #cc0000;    /* ต้นทุนต่อหน่วย: สีแดง */
     }
 
     body {
@@ -28,14 +30,15 @@
       background-color: var(--bg-light);
       color: var(--text-main);
       margin: 0; padding: 15px;
-      font-size: 13px;
+      font-size: 13.5px;
+      font-weight: bold;
     }
 
     .container { max-width: 1400px; margin: 0 auto; }
 
     /* HOME NAV BUTTON */
     .nav-btn {
-      background: rgba(0, 102, 204, 0.08); border: 1px solid var(--stock-blue);
+      background: rgba(0, 85, 179, 0.1); border: 1.5px solid var(--stock-blue);
       color: var(--stock-blue); padding: 8px 16px; border-radius: 4px;
       text-decoration: none; font-weight: bold; font-size: 14px;
       display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s;
@@ -43,7 +46,7 @@
     }
     .nav-btn:hover { 
       background: var(--stock-blue); color: #ffffff; 
-      box-shadow: 0 0 10px rgba(0, 102, 204, 0.3); 
+      box-shadow: 0 0 10px rgba(0, 85, 179, 0.3); 
     }
 
     /* HEADER */
@@ -52,13 +55,13 @@
       border-bottom: 2px solid var(--border-dark); padding-bottom: 10px; margin-bottom: 15px;
     }
     .app-title {
-      font-size: 24px; font-weight: bold; color: #111111; margin: 0;
+      font-size: 24px; font-weight: 900; color: #000000; margin: 0;
       letter-spacing: 1px; text-transform: uppercase;
     }
     
     /* TOOLBAR & FILTERS */
     .toolbar {
-      background: var(--panel-bg); border: 1px solid var(--border-dark);
+      background: var(--panel-bg); border: 1.5px solid var(--border-dark);
       padding: 15px; border-radius: 6px; margin-bottom: 20px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
@@ -66,97 +69,99 @@
       display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 15px;
     }
     .filter-group { display: flex; flex-direction: column; gap: 5px; }
-    .filter-group label { color: var(--text-muted); font-size: 11px; text-transform: uppercase; font-weight: bold; }
+    .filter-group label { color: var(--text-muted); font-size: 12px; text-transform: uppercase; font-weight: 900; }
     .filter-group input {
-      background: #ffffff; border: 1px solid #ccc; color: #000;
+      background: #ffffff; border: 1.5px solid #999; color: #000; font-weight: bold;
       padding: 8px; font-family: inherit; font-size: 14px; border-radius: 4px;
     }
-    .filter-group input:focus { border-color: var(--stock-blue); outline: none; box-shadow: 0 0 5px rgba(0,102,204,0.2); }
+    .filter-group input:focus { border-color: var(--stock-blue); outline: none; box-shadow: 0 0 5px rgba(0,85,179,0.3); }
 
     .action-buttons {
       display: flex; gap: 10px; justify-content: flex-start;
-      padding-top: 15px; border-top: 1px dashed var(--border-dark); flex-wrap: wrap;
+      padding-top: 15px; border-top: 1.5px dashed var(--border-dark); flex-wrap: wrap;
     }
     .btn {
-      padding: 8px 16px; border-radius: 4px; font-family: inherit; font-weight: bold;
+      padding: 8px 16px; border-radius: 4px; font-family: inherit; font-weight: 900;
       cursor: pointer; display: inline-flex; align-items: center; gap: 8px; text-transform: uppercase;
-      border: 1px solid; transition: all 0.2s; background: #ffffff;
+      border: 1.5px solid; transition: all 0.2s; background: #ffffff;
     }
-    .btn-calc { color: #b37400; border-color: #d18b00; }
-    .btn-calc:hover { background: #d18b00; color: #fff; }
-    .btn-export { color: var(--stock-green); border-color: var(--stock-green); }
-    .btn-export:hover { background: var(--stock-green); color: #fff; }
-    .btn-print { color: #333; border-color: #666; }
-    .btn-print:hover { background: #333; color: #fff; }
+    .btn-calc { color: #995700; border-color: #b36b00; }
+    .btn-calc:hover { background: #b36b00; color: #fff; }
+    .btn-export { color: #007700; border-color: #007700; }
+    .btn-export:hover { background: #007700; color: #fff; }
+    .btn-print { color: #111; border-color: #444; }
+    .btn-print:hover { background: #111; color: #fff; }
 
     /* MATRIX TABLE STYLE */
     .matrix-container { 
-      margin-bottom: 20px; border: 1px solid var(--border-dark); 
+      margin-bottom: 20px; border: 1.5px solid var(--border-dark); 
       background: var(--panel-bg); border-radius: 6px; overflow: hidden; 
       box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
     .matrix-title {
-      background: linear-gradient(90deg, #eaeaea, #f9f9f9); color: #111111;
-      padding: 12px 15px; margin: 0; font-size: 15px; font-weight: bold;
+      background: linear-gradient(90deg, #e4e7eb, #f1f3f5); color: #000000;
+      padding: 12px 15px; margin: 0; font-size: 15px; font-weight: 900;
       border-bottom: 2px solid var(--stock-blue);
       cursor: pointer; display: flex; justify-content: space-between; align-items: center;
       transition: background 0.3s;
     }
-    .matrix-title:hover { background: #e0e0e0; }
+    .matrix-title:hover { background: #dcdfe3; }
     
     .table-wrapper { overflow-x: auto; transition: max-height 0.3s ease-out; }
     .matrix-container.collapsed .table-wrapper { display: none; }
     .matrix-container.collapsed .matrix-title { border-bottom: none; }
 
     table { width: 100%; border-collapse: collapse; text-align: right; white-space: nowrap; }
-    th, td { padding: 10px; border-bottom: 1px solid #eeeeee; border-right: 1px dotted #e0e0e0; }
-    th { color: #555555; font-weight: bold; background: #f8f9fa; text-align: center; font-size: 12px; }
+    th, td { padding: 10px; border-bottom: 1.5px solid #dddddd; border-right: 1px dotted #cccccc; font-weight: bold; }
+    th { color: #111111; font-weight: 900; background: #eef1f5; text-align: center; font-size: 13px; }
     td:last-child, th:last-child { border-right: none; }
     
     .sticky-col {
       position: sticky; left: 0; background: #ffffff; z-index: 2; text-align: left;
-      font-weight: bold; color: var(--stock-blue); border-right: 2px solid var(--border-dark);
-      min-width: 140px; 
-      font-size: 12px;
+      font-weight: 900; color: var(--stock-blue); border-right: 2px solid var(--border-dark);
+      min-width: 150px; 
+      font-size: 13px;
     }
     
-    .row-qty td { color: #222222; }
-    .row-hrs td { color: #666666; }
-    .row-cost td { color: var(--stock-green); font-weight: bold; }
+    /* กำหนดสีตามเงื่อนไขใหม่ */
+    .row-qty td { color: var(--color-qty) !important; font-weight: 900; }
+    .row-normal td { color: var(--color-normal) !important; font-weight: 900; }
+    .row-ot td { color: var(--color-ot) !important; font-weight: 900; }
+    .row-cost td { color: var(--color-cost) !important; font-weight: 900; }
     
-    .total-col { background: rgba(0, 102, 204, 0.04); font-weight: bold; color: #000; }
-    .val-zero { color: #cccccc !important; } 
+    .total-col { background: rgba(0, 85, 179, 0.08); font-weight: 900; }
+    .val-zero { color: #aaaaaa !important; font-weight: normal !important; } 
 
-    .loading-msg { text-align: center; padding: 30px; color: var(--stock-blue); font-size: 15px; letter-spacing: 1px; font-weight: bold; }
+    .loading-msg { text-align: center; padding: 30px; color: var(--stock-blue); font-size: 16px; letter-spacing: 1px; font-weight: 900; }
 
     /* Modal คู่มือ */
     .modal-overlay {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.5); z-index: 2000;
+      background: rgba(0, 0, 0, 0.6); z-index: 2000;
       justify-content: center; align-items: center; padding: 20px;
       backdrop-filter: blur(3px);
     }
     .manual-box {
       width: 100%; max-width: 700px; max-height: 85vh;
-      background: #ffffff; border: 1px solid #ccc;
+      background: #ffffff; border: 2px solid #999;
       border-radius: 8px; padding: 25px; overflow-y: auto;
-      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15); font-family: inherit;
-      color: #333333;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2); font-family: inherit;
+      color: #111111; font-weight: bold;
     }
     .manual-header {
       display: flex; justify-content: space-between; align-items: center;
-      border-bottom: 1px solid #dddddd; padding-bottom: 10px; margin-bottom: 15px;
+      border-bottom: 2px solid #dddddd; padding-bottom: 10px; margin-bottom: 15px;
     }
-    .manual-box h3 { color: var(--stock-blue); margin: 0; font-weight: bold; }
-    .manual-box h5 { color: #222; margin-top: 20px; margin-bottom: 10px; font-weight: bold; border-left: 3px solid var(--stock-blue); padding-left: 8px; }
-    .manual-box p, .manual-box li { font-size: 13px; line-height: 1.6; color: #444444; }
+    .manual-box h3 { color: var(--stock-blue); margin: 0; font-weight: 900; }
+    .manual-box h5 { color: #000; margin-top: 20px; margin-bottom: 10px; font-weight: 900; border-left: 4px solid var(--stock-blue); padding-left: 8px; }
+    .manual-box p, .manual-box li { font-size: 13.5px; line-height: 1.6; color: #222222; }
     .manual-box ul { padding-left: 20px; margin-bottom: 15px; }
     .close-modal-btn {
-      background: #f4f4f4; border: 1px solid #cc0000; color: #cc0000;
-      padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 20px; width: 100%;
+      background: #f4f4f4; border: 2px solid #bb0000; color: #bb0000;
+      padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: 900; margin-top: 20px; width: 100%;
       transition: 0.2s;
     }
-    .close-modal-btn:hover { background: #cc0000; color: #fff; }
+    .close-modal-btn:hover { background: #bb0000; color: #fff; }
 
     /* ==========================================
         PRINT MEDIA QUERY (A4 แนวนอน พื้นหลังสีขาว)
@@ -169,7 +174,7 @@
       body { 
         background-color: #ffffff !important; 
         color: #000000 !important; 
-        margin: 0; padding: 0; 
+        margin: 0; padding: 0; font-weight: bold !important;
         -webkit-print-color-adjust: exact; print-color-adjust: exact;
       }
       .no-print { display: none !important; }
@@ -178,12 +183,12 @@
         display: block; text-align: center; margin-bottom: 15px;
         border-bottom: 2px solid #000; padding-bottom: 10px;
       }
-      .print-header h1 { font-size: 18px; margin: 0 0 5px 0; font-family: 'Sarabun', sans-serif; }
-      .print-header p { margin: 0; font-size: 11px; color: #555; }
+      .print-header h1 { font-size: 18px; margin: 0 0 5px 0; font-family: 'Sarabun', sans-serif; font-weight: 900; }
+      .print-header p { margin: 0; font-size: 11px; color: #000; font-weight: bold; }
 
       .matrix-container { 
         background-color: #ffffff !important;
-        border: 1px solid #000 !important; 
+        border: 1.5px solid #000 !important; 
         margin-bottom: 15px; 
         page-break-inside: avoid; 
         overflow: visible !important; 
@@ -197,10 +202,10 @@
       }
       
       .matrix-title { 
-        background: #f0f0f0 !important; 
+        background: #e2e8f0 !important; 
         color: #000 !important; 
         border-bottom: 2px solid #000 !important; 
-        padding: 6px 10px; font-size: 12px; 
+        padding: 6px 10px; font-size: 12px; font-weight: 900; 
       }
       
       table { 
@@ -212,28 +217,33 @@
       
       th, td { 
         background-color: #ffffff !important;
-        border: 1px solid #ccc !important; 
-        color: #000 !important; 
-        padding: 4px; 
-        font-size: 9.5px; 
+        border: 1px solid #999 !important; 
+        padding: 5px; 
+        font-size: 10px; 
+        font-weight: bold !important;
         white-space: nowrap !important; 
       }
       th {
-        background-color: #e0e0e0 !important;
-        font-weight: bold;
+        background-color: #cbd5e1 !important;
+        color: #000 !important;
+        font-weight: 900 !important;
       }
       
       .sticky-col { 
         position: static; 
-        background-color: #f9f9f9 !important;
-        border-right: 1px solid #000 !important; 
+        background-color: #f1f5f9 !important;
+        border-right: 1.5px solid #000 !important; 
         min-width: auto; text-align: left;
+        font-weight: 900 !important;
       }
       
-      .total-col { background-color: #f0f0f0 !important; font-weight: bold; }
+      .total-col { background-color: #e2e8f0 !important; font-weight: 900 !important; }
       
-      tr.row-qty td, tr.row-hrs td { color: #000 !important; }
-      tr.row-cost td { color: #000 !important; font-weight: bold; }
+      /* บังคับสีตอนปริ้นท์ตามกำหนด */
+      tr.row-qty td { color: var(--color-qty) !important; font-weight: bold !important; }
+      tr.row-normal td { color: var(--color-normal) !important; font-weight: bold !important; }
+      tr.row-ot td { color: var(--color-ot) !important; font-weight: bold !important; }
+      tr.row-cost td { color: var(--color-cost) !important; font-weight: 900 !important; }
       
       ::-webkit-scrollbar { display: none; } 
     }
@@ -255,7 +265,7 @@
   <div class="app-header no-print">
     <div>
       <h1 class="app-title"><i class="fa-solid fa-layer-group" style="color:var(--stock-blue);"></i> รายงานต้นทุนต่อหน่วย แยกตามขั้นตอนผลิต</h1>
-      <div style="color: var(--text-muted); font-size: 12px; margin-top: 5px;">รายงานต้นทุนการผลิตแยกตามขั้นตอน (Pivot Format)</div>
+      <div style="color: var(--text-muted); font-size: 13px; margin-top: 5px; font-weight: 900;">รายงานต้นทุนการผลิตแยกตามขั้นตอน (Pivot Format)</div>
     </div>
   </div>
 
@@ -321,11 +331,11 @@
       <h5>2. การประมวลผลและอ่านผลลัพธ์ (Matrix Table)</h5>
       <p>เมื่อเข้าสู่ระบบ ระบบจะดึงข้อมูลเดือนล่าสุดมาแสดงให้อัตโนมัติ โดยจัดให้วันปัจจุบันอยู่กึ่งกลางค่อนไปทางขวา และแสดงข้อมูลแยกตาม <b>ขั้นตอนการผลิต</b> โดยในแต่ละตารางจะแสดง:</p>
       <ul>
-        <li><b>ยอดผลิต (ชิ้น):</b> จำนวนชิ้นงานรวมที่ทำได้ในวันนั้นๆ</li>
-        <li><b>เวลาทำปกติ (ชม.):</b> จำนวนชั่วโมงการทำงานในกะปกติ</li>
-        <li><b>เวลาทำ OT (ชม.):</b> จำนวนชั่วโมงการทำงานล่วงเวลา (OT)</li>
-        <li><b>ต้นทุน/ชิ้น (บาท):</b> ค่าแรงเฉลี่ยต่อ 1 ชิ้นงาน <br>
-            <i style="color:#666;">สูตรการคำนวณ: [(ชั่วโมงปกติ × เรทปกติ) + (ชั่วโมง OT × เรทปกติ × 1.5)] ÷ ยอดผลิต</i></li>
+        <li><b style="color:var(--color-qty);">ยอดผลิต (ชิ้น):</b> จำนวนชิ้นงานรวมที่ทำได้ในวันนั้นๆ</li>
+        <li><b style="color:var(--color-normal);">เวลาทำปกติ (ชม.):</b> จำนวนชั่วโมงการทำงานในกะปกติ</li>
+        <li><b style="color:var(--color-ot);">เวลาทำ OT (ชม.):</b> จำนวนชั่วโมงการทำงานล่วงเวลา (OT)</li>
+        <li><b style="color:var(--color-cost);">ต้นทุน/ชิ้น (บาท):</b> ค่าแรงเฉลี่ยต่อ 1 ชิ้นงาน <br>
+            <i style="color:#222; font-weight:bold;">สูตรการคำนวณ: [(ชั่วโมงปกติ × เรทปกติ) + (ชั่วโมง OT × เรทปกติ × 1.5)] ÷ ยอดผลิต</i></li>
       </ul>
       <p>*คุณสามารถ <b>คลิกที่แถบชื่อขั้นตอน</b> เพื่อยุบหรือขยายตารางของขั้นตอนนั้นๆ ได้</p>
 
@@ -471,7 +481,7 @@
         let dObj = new Date(d);
         theadSubHTML += `<th>${dObj.getDate().toString().padStart(2,'0')}/${(dObj.getMonth()+1).toString().padStart(2,'0')}</th>`;
       });
-      theadSubHTML += `<th class="total-col" style="color:#0066cc;">รวมทั้งหมด</th></tr>`;
+      theadSubHTML += `<th class="total-col" style="color:#004080;">รวมทั้งหมด</th></tr>`;
 
       db.steps.sort((a,b) => (a.id_step||0) - (b.id_step||0)).forEach(step => {
         const stepId = step.id_step;
@@ -488,14 +498,14 @@
         });
         rowQty += `<td class="total-col">${data.totalQty.toLocaleString()}</td></tr>`;
 
-        let rowHrsNormal = `<tr class="row-hrs"><td class="sticky-col"><i class="fa-regular fa-clock"></i> เวลาทำปกติ (ชม.)</td>`;
+        let rowHrsNormal = `<tr class="row-normal"><td class="sticky-col"><i class="fa-regular fa-clock"></i> เวลาทำปกติ (ชม.)</td>`;
         dateRange.forEach(d => {
           let val = data.daily[d].hrsNormal;
           rowHrsNormal += `<td class="${val===0?'val-zero':''}">${val.toFixed(2)}</td>`;
         });
         rowHrsNormal += `<td class="total-col">${data.totalHrsNormal.toFixed(2)}</td></tr>`;
 
-        let rowHrsOT = `<tr class="row-hrs"><td class="sticky-col"><i class="fa-solid fa-clock"></i> เวลาทำ OT (ชม.)</td>`;
+        let rowHrsOT = `<tr class="row-ot"><td class="sticky-col"><i class="fa-solid fa-clock"></i> เวลาทำ OT (ชม.)</td>`;
         dateRange.forEach(d => {
           let val = data.daily[d].hrsOT;
           rowHrsOT += `<td class="${val===0?'val-zero':''}">${val.toFixed(2)}</td>`;
@@ -576,20 +586,21 @@
       <head>
         <meta charset="utf-8">
         <style>
-          body { font-family: 'Tahoma', 'Arial', sans-serif; }
+          body { font-family: 'Tahoma', 'Arial', sans-serif; font-weight: bold; }
           table { border-collapse: collapse; margin-bottom: 20px; width: 100%; }
-          th, td { border: 1px solid #000000; padding: 4px; font-size: 10pt; text-align: right; }
-          th { color: #008000; text-align: center; font-weight: normal; }
-          .sticky-col { text-align: left; }
-          tr.row-qty td, tr.row-qty td.sticky-col { color: #000000; }
-          tr.row-hrs td, tr.row-hrs td.sticky-col { color: #000000; }
-          tr.row-cost td, tr.row-cost td.sticky-col { color: #008000; }
+          th, td { border: 1.5px solid #000000; padding: 5px; font-size: 10pt; text-align: right; font-weight: bold; }
+          th { color: #000000; text-align: center; font-weight: 900; background-color: #e2e8f0; }
+          .sticky-col { text-align: left; font-weight: 900; }
+          tr.row-qty td, tr.row-qty td.sticky-col { color: #0066cc; }
+          tr.row-normal td, tr.row-normal td.sticky-col { color: #008800; }
+          tr.row-ot td, tr.row-ot td.sticky-col { color: #b38600; }
+          tr.row-cost td, tr.row-cost td.sticky-col { color: #cc0000; font-weight: 900; }
           h3.matrix-title { 
-            color: #0000ff; font-size: 11pt; text-align: left; margin: 15px 0 5px 0; font-weight: normal; 
+            color: #0000cc; font-size: 11pt; text-align: left; margin: 15px 0 5px 0; font-weight: 900; 
             border: none; background: none;
           }
-          h3.matrix-title span { color: #0000ff; }
-          h2.excel-header { text-align: center; font-size: 16pt; font-weight: normal; margin-bottom: 20px; color: #000000; }
+          h3.matrix-title span { color: #0000cc; }
+          h2.excel-header { text-align: center; font-size: 16pt; font-weight: 900; margin-bottom: 20px; color: #000000; }
         </style>
       </head>
       <body>
@@ -629,14 +640,14 @@
         <title>คู่มือการใช้งาน COST MATRIX</title>
         <style>
           @page { size: A4 portrait; margin: 20mm; }
-          body { font-family: 'Sarabun', Tahoma, sans-serif; color: #000; line-height: 1.6; }
-          h3 { border-bottom: 2px solid #000; padding-bottom: 10px; text-align: center; font-size: 22px; margin-top: 0; }
-          h5 { margin-top: 25px; font-size: 18px; color: #333; }
+          body { font-family: 'Sarabun', Tahoma, sans-serif; color: #000; line-height: 1.6; font-weight: bold; }
+          h3 { border-bottom: 2px solid #000; padding-bottom: 10px; text-align: center; font-size: 22px; margin-top: 0; font-weight: 900; }
+          h5 { margin-top: 25px; font-size: 18px; color: #000; font-weight: 900; }
           ul { padding-left: 20px; }
-          li { margin-bottom: 8px; font-size: 14px; }
-          p { font-size: 14px; }
+          li { margin-bottom: 8px; font-size: 14px; font-weight: bold; }
+          p { font-size: 14px; font-weight: bold; }
           b { color: #000; }
-          i { color: #555; font-size: 13px; }
+          i { color: #333; font-size: 13px; }
         </style>
       </head>
       <body>
