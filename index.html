@@ -21,8 +21,9 @@
       /* สีตามที่ต้องการ */
       --color-qty: #0066cc;     /* ยอดผลิต: สีฟ้า */
       --color-normal: #008800;  /* เวลาปกติ: สีเขียว */
-      --color-ot: #b38600;      /* เวลาโอที: สีเหลือง (ปรับให้เข้มขึ้นเล็กน้อยเพื่อให้มองเห็นชัดบนพื้นขาว) */
+      --color-ot: #b38600;      /* เวลาโอที: สีเหลือง */
       --color-cost: #cc0000;    /* ต้นทุนต่อหน่วย: สีแดง */
+      --color-worker: #4b0082;  /* จำนวนคน: สีม่วง */
     }
 
     body {
@@ -127,6 +128,8 @@
     .row-qty td { color: var(--color-qty) !important; font-weight: 900; }
     .row-normal td { color: var(--color-normal) !important; font-weight: 900; }
     .row-ot td { color: var(--color-ot) !important; font-weight: 900; }
+    .row-worker-normal td { color: var(--color-worker) !important; font-weight: 900; }
+    .row-worker-ot td { color: var(--color-worker) !important; font-weight: 900; }
     .row-cost td { color: var(--color-cost) !important; font-weight: 900; }
     
     .total-col { background: rgba(0, 85, 179, 0.08); font-weight: 900; }
@@ -243,6 +246,8 @@
       tr.row-qty td { color: var(--color-qty) !important; font-weight: bold !important; }
       tr.row-normal td { color: var(--color-normal) !important; font-weight: bold !important; }
       tr.row-ot td { color: var(--color-ot) !important; font-weight: bold !important; }
+      tr.row-worker-normal td { color: var(--color-worker) !important; font-weight: bold !important; }
+      tr.row-worker-ot td { color: var(--color-worker) !important; font-weight: bold !important; }
       tr.row-cost td { color: var(--color-cost) !important; font-weight: 900 !important; }
       
       ::-webkit-scrollbar { display: none; } 
@@ -265,7 +270,7 @@
   <div class="app-header no-print">
     <div>
       <h1 class="app-title"><i class="fa-solid fa-layer-group" style="color:var(--stock-blue);"></i> รายงานต้นทุนต่อหน่วย แยกตามขั้นตอนผลิต</h1>
-      <div style="color: var(--text-muted); font-size: 13px; margin-top: 5px; font-weight: 900;">รายงานต้นทุนการผลิตแยกตามขั้นตอน (Pivot Format)</div>
+      <div style="color: var(--text-muted); font-size: 13px; margin-top: 5px; font-weight: 900;">รายงานต้นทุนการผลิตและสรุปกำลังคนแยกตามขั้นตอน (Pivot Format)</div>
     </div>
   </div>
 
@@ -332,8 +337,10 @@
       <p>เมื่อเข้าสู่ระบบ ระบบจะดึงข้อมูลเดือนล่าสุดมาแสดงให้อัตโนมัติ โดยจัดให้วันปัจจุบันอยู่กึ่งกลางค่อนไปทางขวา และแสดงข้อมูลแยกตาม <b>ขั้นตอนการผลิต</b> โดยในแต่ละตารางจะแสดง:</p>
       <ul>
         <li><b style="color:var(--color-qty);">ยอดผลิต (ชิ้น):</b> จำนวนชิ้นงานรวมที่ทำได้ในวันนั้นๆ</li>
-        <li><b style="color:var(--color-normal);">เวลาทำปกติ (ชม.):</b> จำนวนชั่วโมงการทำงานในกะปกติ</li>
-        <li><b style="color:var(--color-ot);">เวลาทำ OT (ชม.):</b> จำนวนชั่วโมงการทำงานล่วงเวลา (OT)</li>
+        <li><b style="color:var(--color-worker);">จำนวนคนทำปกติ (คน):</b> จำนวนพนักงานที่ทำงานในกะปกติ</li>
+        <li><b style="color:var(--color-worker);">จำนวนคนทำ OT (คน):</b> จำนวนพนักงานที่ทำงานล่วงเวลา (OT)</li>
+        <li><b style="color:var(--color-normal);">เวลาทำปกติ (ชม.):</b> จำนวนชั่วโมงการทำงานรวมในกะปกติ</li>
+        <li><b style="color:var(--color-ot);">เวลาทำ OT (ชม.):</b> จำนวนชั่วโมงการทำงานรวมล่วงเวลา (OT)</li>
         <li><b style="color:var(--color-cost);">ต้นทุน/ชิ้น (บาท):</b> ค่าแรงเฉลี่ยต่อ 1 ชิ้นงาน <br>
             <i style="color:#222; font-weight:bold;">สูตรการคำนวณ: [(ชั่วโมงปกติ × เรทปกติ) + (ชั่วโมง OT × เรทปกติ × 1.5)] ÷ ยอดผลิต</i></li>
       </ul>
@@ -433,7 +440,8 @@
     container.innerHTML = '<div class="loading-msg"><i class="fa-solid fa-spinner fa-spin"></i> กำลังประมวลผลข้อมูล...</div>';
 
     try {
-      const res = await fetch(`${SUPABASE_URL}/daily_production?record_date=gte.${dateFrom}&record_date=lte.${dateTo}&select=id_target,record_date,produced_amount,hour_work,work_period`, { headers });
+      // เพิ่มการดึง id_name มาด้วยเพื่อใช้นับจำนวนคน (id_name ถูกคัดกรองไม่ให้ซ้ำในแต่ละวัน/ประเภทการทำงาน)
+      const res = await fetch(`${SUPABASE_URL}/daily_production?record_date=gte.${dateFrom}&record_date=lte.${dateTo}&select=id_target,record_date,produced_amount,hour_work,work_period,id_name`, { headers });
       const logs = await res.json();
 
       let dateRange = [];
@@ -447,9 +455,22 @@
       let agg = {}; 
       
       db.steps.forEach(s => {
-        agg[s.id_step] = { totalQty: 0, totalHrsNormal: 0, totalHrsOT: 0, daily: {} };
+        agg[s.id_step] = { 
+            totalQty: 0, 
+            totalHrsNormal: 0, 
+            totalHrsOT: 0, 
+            daily: {},
+            allWorkersNormal: new Set(),
+            allWorkersOT: new Set()
+        };
         dateRange.forEach(d => { 
-          agg[s.id_step].daily[d] = { qty: 0, hrsNormal: 0, hrsOT: 0 }; 
+          agg[s.id_step].daily[d] = { 
+              qty: 0, 
+              hrsNormal: 0, 
+              hrsOT: 0,
+              workersNormal: new Set(),
+              workersOT: new Set()
+          }; 
         });
       });
 
@@ -459,6 +480,7 @@
           const qty = log.produced_amount || 0;
           const hrs = log.hour_work || 0;
           const isOT = String(log.work_period || '').trim().toUpperCase() === 'OT';
+          const idName = log.id_name;
 
           agg[target.id_step].daily[log.record_date].qty += qty;
           agg[target.id_step].totalQty += qty;
@@ -466,9 +488,17 @@
           if (isOT) {
             agg[target.id_step].daily[log.record_date].hrsOT += hrs;
             agg[target.id_step].totalHrsOT += hrs;
+            if (idName) {
+                agg[target.id_step].daily[log.record_date].workersOT.add(idName);
+                agg[target.id_step].allWorkersOT.add(idName);
+            }
           } else {
             agg[target.id_step].daily[log.record_date].hrsNormal += hrs;
             agg[target.id_step].totalHrsNormal += hrs;
+            if (idName) {
+                agg[target.id_step].daily[log.record_date].workersNormal.add(idName);
+                agg[target.id_step].allWorkersNormal.add(idName);
+            }
           }
         }
       });
@@ -497,6 +527,26 @@
           rowQty += `<td class="${val===0?'val-zero':''}">${val.toLocaleString()}</td>`;
         });
         rowQty += `<td class="total-col">${data.totalQty.toLocaleString()}</td></tr>`;
+
+        // แถวที่ 1: จำนวนคนทำปกติ (นับจำนวนพนักงานแบบไม่ซ้ำรายวัน)
+        let rowWorkerNormal = `<tr class="row-worker-normal"><td class="sticky-col"><i class="fa-solid fa-users"></i> จำนวนคนปกติ (คน)</td>`;
+        let totalWorkersNormal = 0; 
+        dateRange.forEach(d => {
+          let val = data.daily[d].workersNormal.size;
+          totalWorkersNormal += val;
+          rowWorkerNormal += `<td class="${val===0?'val-zero':''}">${val.toLocaleString()}</td>`;
+        });
+        rowWorkerNormal += `<td class="total-col">${totalWorkersNormal.toLocaleString()}</td></tr>`;
+
+        // แถวที่ 2: จำนวนคนทำ OT (นับจำนวนพนักงานแบบไม่ซ้ำรายวัน)
+        let rowWorkerOT = `<tr class="row-worker-ot"><td class="sticky-col"><i class="fa-solid fa-user-clock"></i> จำนวนคน OT (คน)</td>`;
+        let totalWorkersOT = 0;
+        dateRange.forEach(d => {
+          let val = data.daily[d].workersOT.size;
+          totalWorkersOT += val;
+          rowWorkerOT += `<td class="${val===0?'val-zero':''}">${val.toLocaleString()}</td>`;
+        });
+        rowWorkerOT += `<td class="total-col">${totalWorkersOT.toLocaleString()}</td></tr>`;
 
         let rowHrsNormal = `<tr class="row-normal"><td class="sticky-col"><i class="fa-regular fa-clock"></i> เวลาทำปกติ (ชม.)</td>`;
         dateRange.forEach(d => {
@@ -538,6 +588,8 @@
                 <thead>${theadSubHTML}</thead>
                 <tbody>
                   ${rowQty}
+                  ${rowWorkerNormal}
+                  ${rowWorkerOT}
                   ${rowHrsNormal}
                   ${rowHrsOT}
                   ${rowCost}
@@ -592,6 +644,8 @@
           th { color: #000000; text-align: center; font-weight: 900; background-color: #e2e8f0; }
           .sticky-col { text-align: left; font-weight: 900; }
           tr.row-qty td, tr.row-qty td.sticky-col { color: #0066cc; }
+          tr.row-worker-normal td, tr.row-worker-normal td.sticky-col { color: #4b0082; }
+          tr.row-worker-ot td, tr.row-worker-ot td.sticky-col { color: #4b0082; }
           tr.row-normal td, tr.row-normal td.sticky-col { color: #008800; }
           tr.row-ot td, tr.row-ot td.sticky-col { color: #b38600; }
           tr.row-cost td, tr.row-cost td.sticky-col { color: #cc0000; font-weight: 900; }
