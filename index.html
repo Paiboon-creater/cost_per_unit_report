@@ -334,13 +334,13 @@
       </ul>
 
       <h5>2. การประมวลผลและอ่านผลลัพธ์ (Matrix Table)</h5>
-      <p>เมื่อเข้าสู่ระบบ ระบบจะดึงข้อมูลเดือนล่าสุดมาแสดงให้อัตโนมัติ โดยจัดให้วันปัจจุบันอยู่กึ่งกลางค่อนไปทางขวา และแสดงข้อมูลแยกตาม <b>ขั้นตอนการผลิต</b> โดยในแต่ละตารางจะแสดง:</p>
+      <p>เมื่อเข้าสู่ระบบ ระบบจะดึงข้อมูลเดือนล่าสุดมาแสดงให้อัตโนมัติ โดยจัดให้วันปัจจุบันอยู่กึ่งกลางค่อนไปทางขวา และแสดงข้อมูลเรียงลำดับตาม <b>ขั้นตอนการผลิต (Level)</b> โดยในแต่ละตารางจะแสดง:</p>
       <ul>
         <li><b style="color:var(--color-qty);">ยอดผลิต (ชิ้น):</b> จำนวนชิ้นงานรวมที่ทำได้ในวันนั้นๆ</li>
         <li><b style="color:var(--color-worker);">จำนวนคนทำปกติ (คน):</b> จำนวนพนักงานที่ทำงานในกะปกติ</li>
         <li><b style="color:var(--color-worker);">จำนวนคนทำ OT (คน):</b> จำนวนพนักงานที่ทำงานล่วงเวลา (OT)</li>
-        <li><b style="color:var(--color-normal);">เวลาทำปกติ (ชม.):</b> จำนวนชั่วโมงการทำงานรวมในกะปกติ</li>
-        <li><b style="color:var(--color-ot);">เวลาทำ OT (ชม.):</b> จำนวนชั่วโมงการทำงานรวมล่วงเวลา (OT)</li>
+        <li><b style="color:var(--color-normal);">เวลาทำปกติ (ชม):</b> จำนวนชั่วโมงการทำงานรวมในกะปกติ</li>
+        <li><b style="color:var(--color-ot);">เวลาทำ OT (ชม):</b> จำนวนชั่วโมงการทำงานรวมล่วงเวลา (OT)</li>
         <li><b style="color:var(--color-cost);">ต้นทุน/ชิ้น (บาท):</b> ค่าแรงเฉลี่ยต่อ 1 ชิ้นงาน <br>
             <i style="color:#222; font-weight:bold;">สูตรการคำนวณ: [(ชั่วโมงปกติ × เรทปกติ) + (ชั่วโมง OT × เรทปกติ × 1.5)] ÷ ยอดผลิต</i></li>
       </ul>
@@ -394,7 +394,7 @@
     try {
       const [targetsRes, stepsRes] = await Promise.all([
         fetch(`${SUPABASE_URL}/targets?select=id_target,id_step`, { headers }),
-        fetch(`${SUPABASE_URL}/production_steps?select=id_step,step_name`, { headers })
+        fetch(`${SUPABASE_URL}/production_steps?select=id_step,step_name,level`, { headers }) // เพิ่มการดึง level
       ]);
 
       db.targets = await targetsRes.json();
@@ -440,7 +440,7 @@
     container.innerHTML = '<div class="loading-msg"><i class="fa-solid fa-spinner fa-spin"></i> กำลังประมวลผลข้อมูล...</div>';
 
     try {
-      // เพิ่มการดึง id_name มาด้วยเพื่อใช้นับจำนวนคน (id_name ถูกคัดกรองไม่ให้ซ้ำในแต่ละวัน/ประเภทการทำงาน)
+      // ดึงข้อมูล id_name มาด้วยเพื่อใช้นับจำนวนคน (id_name ถูกคัดกรองไม่ให้ซ้ำในแต่ละวัน/ประเภทการทำงาน)
       const res = await fetch(`${SUPABASE_URL}/daily_production?record_date=gte.${dateFrom}&record_date=lte.${dateTo}&select=id_target,record_date,produced_amount,hour_work,work_period,id_name`, { headers });
       const logs = await res.json();
 
@@ -513,7 +513,13 @@
       });
       theadSubHTML += `<th class="total-col" style="color:#004080;">รวมทั้งหมด</th></tr>`;
 
-      db.steps.sort((a,b) => (a.id_step||0) - (b.id_step||0)).forEach(step => {
+      // เรียงลำดับโดยใช้คอลัมน์ level ก่อน (ถ้าไม่มีกำหนด level ให้เป็น 999) แล้วค่อยเรียงตาม id_step
+      db.steps.sort((a, b) => {
+        let levelA = a.level !== null && a.level !== undefined ? parseInt(a.level) : 999;
+        let levelB = b.level !== null && b.level !== undefined ? parseInt(b.level) : 999;
+        if (levelA !== levelB) return levelA - levelB;
+        return (a.id_step || 0) - (b.id_step || 0);
+      }).forEach(step => {
         const stepId = step.id_step;
         const data = agg[stepId];
 
